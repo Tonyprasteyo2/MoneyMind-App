@@ -1,4 +1,4 @@
-MoneyMind 💰✨
+\MoneyMind 💰✨
 
 Smart AI-Powered Financial Management Platform
 
@@ -8,15 +8,15 @@ MoneyMind adalah platform manajemen keuangan modern yang menggabungkan OCR, AI C
 
 🚀 Fitur Utama
 
-Tesscard (OCR Struk) — Ekstraksi otomatis dari struk belanja
+Tesscard (OCR Struk)
 
-1.AI Classification — Rekomendasi kategori transaksi secara cerdas
+1.AI Classification
 
-2.PWA (Installable App) — Bisa di-install, cepat, dan support offline
+2.PWA (Installable App)
 
-3.Scheduled Notifications — Pengingat transaksi & tagihan otomatis
+3.Scheduled Notifications 
 
-4.AI Spending Analysis — Insight pengeluaran + saran penghematan
+4.AI Spending Analysis
 
 Dashboard Modern — Grafik dan laporan keuangan lengkap
 
