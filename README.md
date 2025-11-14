@@ -12,7 +12,7 @@ Tesscard (OCR Struk)
 
 1.AI Classification
 
-2.PWA (Installable App)
+2.PWA
 
 3.Scheduled Notifications 
 
