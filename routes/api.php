@@ -34,4 +34,6 @@ Route::middleware('firebase.auth')->group(function(){
     Route::post("/filter-laporan",[C_Laporan::class,"generateLaporan"]);
     Route::post('/analisis-laporan', [C_Laporan::class, 'analisisAI']);
     Route::post('/token-fcm', [C_Auth::class, 'saveToken']);
+    Route::post('/tambah-budget',[C_Transaksi::class,"AddBudget"]);
+    Route::get('/budget-planing',[C_Transaksi::class,"getBudgetPlannig"]);
 });

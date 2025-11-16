@@ -24,4 +24,7 @@ class M_transaksi extends Model
     {
         return $this->belongsTo(M_kategori::class,'category_id','kategori_id');
     }
+    public function getKategori(){
+        return $this->belongsTo(M_kategori::class,'category_id','kategori_id');
+    }
 }

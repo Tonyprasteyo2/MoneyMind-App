@@ -27,7 +27,7 @@ import {
 } from "react-icons/fa";
 import { LuWalletCards } from "react-icons/lu";
 import ChartDataLabels from "chartjs-plugin-datalabels";
-import { formatRupiah } from "./Cards";
+// import { formatRupiah } from "./Cards";
 import Swal from "sweetalert2";
 import DOMPurify from "dompurify";
 
@@ -287,7 +287,7 @@ export const DougChartKategori = ({ data }) => {
                         const persen =
                             kategoriList.find((kt) => kt.kategori === label)
                                 ?.persen || 0;
-                        return `${label}: ${formatRupiah(value)} (${persen}%)`;
+                        return `${label}: ${value} (${persen}%)`; // format rupiah
                     },
                 },
             },
@@ -362,7 +362,7 @@ export const DougChartKategori = ({ data }) => {
                         Total Pemasukan Bulan Ini
                     </p>
                     <p className="text-2xl font-bold text-green-500">
-                        {formatRupiah(totalPemasukan)}
+                        {/* {totalPemasukan}  formatRupiah */}
                     </p>
                     <p
                         className={`text-sm ${
@@ -439,7 +439,7 @@ export const DougChartKategori = ({ data }) => {
                 `}
                         </style>
                     </div>
-                    <div className="w-full max-w-sm space-y-3">
+                    <div className="w-full max-w-sm space-y-3 h-83 overflow-y-auto">
                         {kategoriList.map((nk, res) => {
                             const found =
                                 icons.find(
@@ -470,7 +470,7 @@ export const DougChartKategori = ({ data }) => {
                                             {nk.persen}%
                                         </p>
                                         <p className="text-gray-500">
-                                            {formatRupiah(nk.nominal)}
+                                            {/* {formatRupiah(nk.nominal)} formatRupiah */}
                                         </p>
                                     </div>
                                 </div>

@@ -6,6 +6,7 @@ import { AiOutlineLogout } from "react-icons/ai";
 import { HiOutlineDocumentReport } from "react-icons/hi";
 import { FaMoneyBillTransfer } from "react-icons/fa6";
 import { MdAddHome } from "react-icons/md";
+import { FaMoneyBillWave } from "react-icons/fa";
 export default function Navbar() {
     const { user } = userAuth();
     const navigate = useNavigate();
@@ -63,6 +64,22 @@ export default function Navbar() {
                         />
                         <span className="text-sm sm:text-base">Dashboard</span>
                     </button>
+                     <button
+                        onClick={() => navigate("/transaksi")}
+                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold transition-all duration-300 cursor-pointer ${isActivemenu("/transaksi")
+                                ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow"
+                                : "text-gray-700 hover:bg-gray-100"
+                            }`}
+                    >
+                        <FaMoneyBillTransfer
+                            className={`size-6 ${isActivemenu("/transaksi")
+                                    ? "text-white"
+                                    : "text-blue-600"
+                                }`}
+                        />
+                        <span className="text-sm sm:text-base">Transaksi</span>
+                    </button>
+
                     <button
                         onClick={() => navigate("/laporan")}
                         className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold transition-all duration-300 cursor-pointer ${isActivemenu("/laporan")
@@ -77,6 +94,21 @@ export default function Navbar() {
                                 }`}
                         />
                         <span className="text-sm sm:text-base">Laporan</span>
+                    </button>
+                    <button
+                        onClick={() => navigate("/budget")}
+                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold transition-all duration-300 cursor-pointer ${isActivemenu("/budget")
+                                ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow"
+                                : "text-gray-700 hover:bg-gray-100"
+                            }`}
+                    >
+                        <FaMoneyBillWave
+                            className={`size-6 ${isActivemenu("/budget")
+                                    ? "text-white"
+                                    : "text-blue-600"
+                                }`}
+                        />
+                        <span className="text-sm sm:text-base">Budget</span>
                     </button>
                     <div className="absolute right-4 top-2 sm:top-3 flex items-center gap-2">
                         <img

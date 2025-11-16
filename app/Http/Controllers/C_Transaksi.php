@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\M_Budget;
 use App\Models\M_kategori;
 use App\Models\M_transaksi;
 use App\Models\User;
@@ -37,7 +38,6 @@ class C_Transaksi extends Controller
         $inputKategori = $request->kategori;
         $kategoriId = null;
         if (is_numeric($inputKategori)) {
-
             $kategori = DB::table('tbl_kategori')
                 ->where('kategori_id', $inputKategori)
                 ->where('firebase_uid', $user->firebase_uid)
@@ -198,5 +198,65 @@ class C_Transaksi extends Controller
             "kode" => 200,
             'message' => 'Transaksi berhasil diperbarui',
         ], 200);
+    }
+    public function AddBudget(Request $request)
+    {
+        $valid = Validator::make($request->all(), [
+            'id_kategori' => "integer",
+            'budgetPlaning' => 'numeric|min:1'
+        ]);
+        if ($valid->failed()) {
+            return response()->json([
+                'status' => 422,
+                'message' => $valid->errors()->first()
+            ], 422);
+        }
+        $budget = M_Budget::create([
+            "uid_firebase" => $request->user()->firebase_uid,
+            'id_kategori' => $request->id_kategori,
+            'budget_planing' => $request->budgetPlaning
+        ]);
+        return response()->json([
+            'status'  => 200,
+            'message' => 'Data budget berhasil ditambahkan',
+        ], 200);
+    }
+    public function getBudgetPlannig(Request $request){
+        $uid = $request->user()->firebase_uid;
+        $kategori = M_kategori::with([
+            "transactions"=>function($q) use ($uid){
+                $q->where("firebase_uid",$uid);
+            },
+            "getBudget"=>function($q)use($uid){
+                $q->where("uid_firebase",$uid);
+            }
+        ])->where("firebase_uid",$uid)->get();
+        $result = $kategori->map(function ($key) {
+            $totalpengeluaran = $key->transactions->where("type","pengeluaran")->sum("amount");
+            $totalPemasukan = $key->transactions->where("type","pemasukan")->sum("amount");
+            $budget = $key->getBudget->budget_planing ?? 0;
+            $persen = $budget > 0? min(100,($totalpengeluaran / $budget) * 100):0;
+            $tipe = $key->transactions->pluck("type");
+            return [
+                "kategori"=>$key->name,
+                "budget"=>$budget,
+                "total_pengeluaran"=>$totalpengeluaran,
+                "total_pemasukan"=>$totalPemasukan,
+                "sisa"=>max(0,$budget-$totalpengeluaran),
+                "persen"=>round($persen,1),
+                "type"=> $tipe
+            ];
+        });
+        return response()->json([
+            "status"=>200,
+            "data"=>$result
+        ]);
+    }
+    public function getDataBudget(Request $request){
+        $data = M_Budget::with("getKategoriTransaksi")->get();
+        return response()->json([
+            "status"=>200,
+            "data"=>$data
+        ]);
     }
 }
