@@ -30,6 +30,7 @@ import ChartDataLabels from "chartjs-plugin-datalabels";
 // import { formatRupiah } from "./Cards";
 import Swal from "sweetalert2";
 import DOMPurify from "dompurify";
+import { formatRupiah } from "../pages/Dasboard";
 
 Chart.register(
     LineElement,
@@ -280,6 +281,8 @@ export const DougChartKategori = ({ data }) => {
                 },
             },
             tooltip: {
+                bodyColor: "#fff",
+                titleColor: "#fff",
                 callbacks: {
                     label: (context) => {
                         const label = context.label || "";
@@ -287,9 +290,17 @@ export const DougChartKategori = ({ data }) => {
                         const persen =
                             kategoriList.find((kt) => kt.kategori === label)
                                 ?.persen || 0;
-                        return `${label}: ${value} (${persen}%)`; // format rupiah
+                        return `${label}: ${formatRupiah(value)} (${persen}%)`;
                     },
                 },
+            },
+            datalabels: {
+                color: "#080808ff",
+                font: {
+                    weight: "bold",
+                    size: 10,
+                },
+                formatter: (value) => formatRupiah(value),
             },
         },
         responsive: true,
@@ -362,7 +373,7 @@ export const DougChartKategori = ({ data }) => {
                         Total Pemasukan Bulan Ini
                     </p>
                     <p className="text-2xl font-bold text-green-500">
-                        {/* {totalPemasukan}  formatRupiah */}
+                        {formatRupiah(totalPemasukan)}
                     </p>
                     <p
                         className={`text-sm ${
@@ -470,7 +481,7 @@ export const DougChartKategori = ({ data }) => {
                                             {nk.persen}%
                                         </p>
                                         <p className="text-gray-500">
-                                            {/* {formatRupiah(nk.nominal)} formatRupiah */}
+                                            {formatRupiah(nk.nominal)}
                                         </p>
                                     </div>
                                 </div>
@@ -478,12 +489,14 @@ export const DougChartKategori = ({ data }) => {
                         })}
                     </div>
                 </div>
-                {hasilAnalisis ? ( <div
-                    className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 text-sm leading-relaxed overflow-auto"
-                    dangerouslySetInnerHTML={{
-                        __html: DOMPurify.sanitize(hasilAnalisis),
-                    }}
-                />):null}
+                {hasilAnalisis ? (
+                    <div
+                        className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 text-sm leading-relaxed overflow-auto"
+                        dangerouslySetInnerHTML={{
+                            __html: DOMPurify.sanitize(hasilAnalisis),
+                        }}
+                    />
+                ) : null}
             </div>
         </div>
     );

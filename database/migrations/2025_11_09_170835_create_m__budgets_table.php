@@ -17,6 +17,7 @@ return new class extends Migration
             $table->integer("id_kategori");
             $table->decimal('budget_planing', 15, 2);
             $table->timestamps();
+            $table->integer("target_bulan")->default(1);
             $table->unique(['uid_firebase','id_kategori']);
         });
     }

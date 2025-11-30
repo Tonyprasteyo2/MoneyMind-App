@@ -1,2 +1,8 @@
 User-agent: *
-Disallow:
+Allow: /
+
+Sitemap: https://moneymind.cloud/sitemap.xml
+
+Disallow: /vendor/
+Disallow: /storage/
+Disallow: /api/

@@ -8,13 +8,19 @@ import {
     FaMoneyBill,
     FaDonate,
     FaGift,
+    FaEdit,
+    FaTrash,
 } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { LuWalletCards } from "react-icons/lu";
 import { userAuth } from "../components/AuthPrivate";
 import axios from "axios";
-import { API_URL } from "../service/firebase";
+import { API_URL, BE_OCR } from "../service/firebase";
 import { formatRupiah } from "./Dasboard";
+import DataTable from "react-data-table-component";
+import { IoWarningOutline } from "react-icons/io5";
+import { getBudget } from "../service/getBudget";
+import { ListProgres } from "../components/ListProgres";
 
 const ViewBudget = () => {
     const { user } = userAuth();
@@ -38,10 +44,9 @@ const ViewBudget = () => {
         { name: "donasi", icon: FaDonate, color: "text-purple-500" },
         { name: "lain-lain", icon: LuWalletCards, color: "text-pink-500" },
     ];
-    const [loading, setLoading] = useState(false);
     const [jumlah, setJumlah] = useState(0);
-    const [budgetPengeluaran, setBudgetPengeluaran] = useState([]);
-    const [budgetPemasukan, setBudgetPemasukan] = useState([]);
+    const [targetBulan,setTargetBulan] = useState("");
+    const [dataBudget, setDataBudget] = useState([]);
     const angkaNumber = (e) => {
         let valueInput = e.target.value.replace(/\D/g, "");
         if (!valueInput) {
@@ -57,7 +62,231 @@ const ViewBudget = () => {
         setBudgetValue(formatRupiah);
         setJumlah(parseInt(valueInput, 10));
     };
+    const [editBudgetID, setEditBudgetID] = useState(null);
+    const [editBudgetValue, setEditBudgetValue] = useState("");
+    const [dataKomentar, setDataKomenta] = useState([]);
+    const [budgetPengeluaran, setBudgetPengeluaran] = useState([]);
+    const [budgetPemasukan, setBudgetPemasukan] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const loadBudget = async () => {
+        if (!user) return;
+        const { pemasukan, pengeluaran } = await getBudget(user);
+        setBudgetPemasukan(pemasukan);
+        setBudgetPengeluaran(pengeluaran);
+    };
+    const showDataBudget = async () => {
+        const token = await user.getIdToken();
+        try {
+            const res = await axios.get(`${API_URL}/budget-all`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (res.data.status === 200) {
+                setDataBudget(res.data.data);
+            }
+        } catch (error) {
+            // console.log(error);
+        }
+    };
+    const columns = [
+        {
+            name: "Kategori",
+            selector: (row) => row.name,
+            sortable: true,
+        },
+        {
+            name: "Jenis",
+            selector: (row) => {
+                const firstTrx = row.transactions?.[0];
+                return firstTrx?.type === "pengeluaran"
+                    ? "Pengeluaran"
+                    : "Pemasukan";
+            },
+        },
+        {
+            name: "Budget Planning",
+            selector: (row) =>
+                editBudgetID == row.get_budget?.id_budget ? (
+                    <input
+                        type="number"
+                        className="border p-1 rounded w-24"
+                        value={editBudgetValue}
+                        onChange={(e) => setEditBudgetValue(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        autoFocus
+                    />
+                ) : (
+                    formatRupiah(row.get_budget?.budget_planing)
+                ),
+            sortable: true,
+        },
+        {
+            name: "Terpakai",
+            selector: (row) => {
+                const hasil = row.transactions?.reduce(
+                    (total, trx) => total + Number(trx.amount ?? 0),
+                    0
+                );
+                return formatRupiah(hasil);
+            },
+            sortable: true,
+        },
+        {
+            name: "Sisa",
+            selector: (row) => {
+                const budget = Number(row.get_budget?.budget_planing ?? 0);
+                const terpakai = row.transactions?.reduce(
+                    (total, trx) => total + Number(trx.amount ?? 0),
+                    0
+                );
+                return formatRupiah(budget - terpakai);
+            },
+            sortable: true,
+        },
+        {
+            name: "Progress",
+            cell: (row) => {
+                const budget = Number(row.get_budget?.budget_planing ?? 0);
+                const terpakai = row.transactions?.reduce(
+                    (total, trx) => total + Number(trx.amount ?? 0),
+                    0
+                );
+                const persen =
+                    budget > 0
+                        ? Math.min(Math.round((terpakai / budget) * 100), 100)
+                        : 0;
+                const warna = row.transactions?.[0];
+                return (
+                    <div className="w-full">
+                        <div className="h-2 bg-gray-200 rounded">
+                            <div
+                                className={`h-2 rounded ${
+                                    warna?.type === "pengeluaran"
+                                        ? "bg-red-500"
+                                        : "bg-green-500"
+                                }`}
+                                style={{ width: `${persen}%` }}
+                            />
+                        </div>
+                        <span className="text-xs">{persen}%</span>
+                    </div>
+                );
+            },
+        },
+        {
+            name: "Aksi",
+            cell: (row) => (
+                <div className="flex gap-2">
+                    <FaEdit
+                        className=" text-lg text-sky-300 cursor-pointer"
+                        onClick={() => handleEdit(row)}
+                    />
+                    <FaTrash
+                        className="text-red-500 cursor-pointer text-lg"
+                        onClick={() => handleRemove(row.get_budget.id_budget)}
+                    />
+                </div>
+            ),
+        },
+    ];
+    const handleEdit = async (row) => {
+        setEditBudgetID(row.get_budget.id_budget);
+        setEditBudgetValue(row.get_budget?.budget_planing || "");
+    };
+    const handleRemove = async (row) => {
+        const token = await user.getIdToken();
+        try {
+            const res = await axios.get(`${API_URL}/delete-budget/${row}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (res.status === 200) {
+                Swal.fire({
+                    icon: "success",
+                    timer: 1500,
+                    showConfirmButton: false,
+                    title: "Berhasil Hapus Budget",
+                });
+                await showDataBudget();
+                await getBudget();
+                await loadBudget();
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Gagal Menghapus",
+                text: error?.response?.data?.message || "Terjadi kesalahan.",
+            });
+        }
+    };
 
+    const updateDataBudget = async () => {
+        const token = await user.getIdToken();
+        const data = {
+            idBudget: editBudgetID,
+            budget_planing: editBudgetValue,
+        };
+        const result = await axios.post(
+            `${API_URL}/update-budget-planing`,
+            data,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        if (result.status == 200) {
+            Swal.fire({
+                icon: "success",
+                title: "Berhasil",
+                text: "Update Budget Planning Berhasil",
+                showConfirmButton: false,
+                timer: 1500,
+            });
+            setEditBudgetID(null);
+            await showDataBudget();
+            await getBudget();
+            await loadBudget();
+        }
+    };
+    const handleKeyDown = (e) => {
+        if (e.key === "Tab" || e.key === "Enter") {
+            e.preventDefault();
+            updateDataBudget();
+        }
+    };
+    const komentarPedas = async () => {
+        try {
+            const token = await user.getIdToken();
+            const result = await axios.get(`${API_URL}/komentar-pedas`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+            if (result.data.status == 200) {
+                const gaskomen = await axios.post(
+                    `${BE_OCR}/komentar-pedas`,
+                    {
+                        peringatan: result.data.data,
+                    },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+                setDataKomenta(gaskomen.data.komentar);
+            }
+        } catch (error) {
+            // console.log(error);
+        }
+    };
     const addBudget = async () => {
         const token = await user.getIdToken();
         setLoading(true);
@@ -66,6 +295,7 @@ const ViewBudget = () => {
                 let data = {
                     id_kategori: selectBudget,
                     budgetPlaning: jumlah,
+                    targetBulan:targetBulan
                 };
                 const result = await axios.post(
                     `${API_URL}/tambah-budget`,
@@ -87,6 +317,9 @@ const ViewBudget = () => {
                     });
                     setBudgetValue("");
                     setSelectBudget("");
+                    await showDataBudget();
+                    await getBudget();
+                    await loadBudget();
                 } else {
                     Swal.fire({
                         icon: "error",
@@ -105,101 +338,16 @@ const ViewBudget = () => {
             });
         }
     };
-    const getBudget = async () => {
-        const token = await user.getIdToken();
-        const result = await axios.get(`${API_URL}/budget-planing`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
-        });
-        if (result.data.status === 200) {
-            const all = result.data.data;
-            const dataPengeluaran = all.filter(
-                (item) => item.total_pengeluaran > 0
-            );
-            const dataPeamsukan = all.filter(
-                (item) => item.total_pemasukan > 0
-            );
-            setBudgetPemasukan(dataPeamsukan);
-            setBudgetPengeluaran(dataPengeluaran);
-        }
+    const extractPercent = (text) => {
+        if (!text || typeof text !== "string") return;
+        const match = text.match(/(\d+(\.\d+)?)%/);
+        return match ? parseFloat(match[1]) : null;
     };
     useEffect(() => {
-        getBudget();
+        loadBudget();
+        showDataBudget();
+        komentarPedas();
     }, [user]);
-    
-const ListProgres = ({ title, data }) => {
-    const [progress, setProgress] = useState([]);
-    useEffect(() => {
-        const initial = data.map(() => 0);
-        setProgress(initial);
-        setTimeout(() => {
-            const final = data.map((item) => {
-                const total = title.includes("Pemasukan")
-                    ? item.total_pemasukan
-                    : item.total_pengeluaran;
-                return Math.min((total / item.budget) * 100, 100);
-            });
-            setProgress(final);
-        }, 175);
-    }, [data]);
-    return (
-        <div className="bg-white p-5 rounded-xl shadow-xl w-full max-h-80 overflow-y-auto">
-            <h2 className="font-semibold text-lg mb-4">{title}</h2>
-            {data.length === 0 && (
-                <p className="text-gray-500 text-sm text-center py-5">
-                    Tidak Ada
-                </p>
-            )}
-            {data.map((item, index) => {
-                const total = title.includes("Pemasukan")
-                    ? item.total_pemasukan
-                    : item.total_pengeluaran;
-
-                const barColor = title.includes("Pemasukan")
-                    ? "bg-green-500"
-                    : total > item.budget
-                    ? "bg-red-500"
-                    : "bg-blue-500";
-
-                return (
-                    <div key={index} className="mb-4">
-                        <p className="text-gray-700 mb-1">{item.kategori}</p>
-
-                        <div className="w-full bg-gray-200 h-2 rounded-full mb-1 overflow-hidden">
-                            <div
-                                className={`${barColor} h-2 rounded-full transition-all duration-[1200ms] ease-out`}
-                                style={{
-                                    width: `${progress[index]}%`,
-                                }}
-                            ></div>
-                        </div>
-
-                        <div className="flex justify-between text-sm text-gray-600">
-                            <span>
-                                {formatRupiah(total)} /{" "}
-                                {formatRupiah(item.budget)}
-                            </span>
-
-                            <span
-                                className={
-                                    total > item.budget &&
-                                    !title.includes("Pemasukan")
-                                        ? "text-red-500 font-semibold"
-                                        : ""
-                                }
-                            >
-                                {Math.round(progress[index])}%
-                            </span>
-                        </div>
-                    </div>
-                );
-            })}
-        </div>
-    );
-};
-
     return (
         <>
             <div className="p-1 container mx-auto w-full mt-5">
@@ -263,14 +411,31 @@ const ListProgres = ({ title, data }) => {
                                             )
                                             ?.name.toUpperCase()}
                                     </label>
-                                    <input
-                                        type="text"
-                                        inputMode="numeric"
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        placeholder="masukan biaya budget planning anda"
-                                        value={budgetValue}
-                                        onChange={angkaNumber}
-                                    />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="flex flex-col">
+                                            <label className="mb-1 font-medium">
+                                                Target Budget Planning
+                                            </label>
+                                            <input
+                                                type="text"
+                                                inputMode="numeric"
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                placeholder="Masukkan biaya budget planning anda"
+                                                value={budgetValue}
+                                                onChange={angkaNumber}
+                                            />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <label className="mb-1 font-medium">
+                                                Target
+                                            </label>
+                                            <input
+                                                type="number"
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                placeholder="Masukkan target selesai-nya" onChange={(e)=>setTargetBulan(e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                                 <button className="w-auto py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition cursor-pointer">
                                     Simpat Budget
@@ -292,11 +457,98 @@ const ListProgres = ({ title, data }) => {
                     />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 mt-12 gap-8">
-                     <div className="bg-white shadow-md rounded-xl p-3 sm:p-6 w-full md:col-span-2">
-                        <h4 className="font-semibold mb-2">Data Budget Kategori</h4>
+                    <div className="bg-white shadow-md rounded-xl p-3 sm:p-6 w-full md:col-span-2 capitalize">
+                        <h4 className="font-semibold mb-2">
+                            Data Budget Planning Kategori
+                        </h4>
+                        <DataTable
+                            paginationPerPage={10}
+                            striped
+                            pagination
+                            columns={columns}
+                            data={dataBudget}
+                        />
                     </div>
                     <div className="bg-white shadow-md rounded-xl p-3 sm:p-6 w-full md:col-span-1">
-                        aa
+                        <div className="flex items-center gap-2 mb-5">
+                            <IoWarningOutline className="text-yellow-500 text-xl" />
+                            <h4 className="text-lg font-semibold text-gray-800">
+                                Peringatan Budget Pengeluaran
+                            </h4>
+
+                            <style>
+                                {`
+                @keyframes fadeSlide {
+                    0% { opacity: 0; transform: translateY(10px); }
+                    100% { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fadeSlide { animation: fadeSlide 0.4s ease-out forwards; }
+
+                @keyframes shakeBrutal {
+                    0% { transform: translate(0px, 0px) rotate(0deg); }
+                    20% { transform: translate(-4px, 2px) rotate(-1deg); }
+                    40% { transform: translate(4px, -2px) rotate(1deg); }
+                    60% { transform: translate(-4px, 2px) rotate(-1deg); }
+                    80% { transform: translate(4px, -2px) rotate(-1deg); }
+                    100% { transform: translate(0px, 0px) rotate(0deg); }
+                }
+                .animate-shakeBrutal { animation: shakeBrutal 0.35s ease-in-out; }
+            `}
+                            </style>
+                        </div>
+                        <style>
+                            {`
+        @keyframes fadeSlide {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeSlide {
+            animation: fadeSlide 0.4s ease-out forwards;
+        }
+
+        @keyframes shakeBrutal {
+            0% { transform: translate(0px, 0px) rotate(0deg); }
+            20% { transform: translate(-3px, 2px) rotate(-1deg); }
+            40% { transform: translate(3px, -2px) rotate(1deg); }
+            60% { transform: translate(-3px, 2px) rotate(-1deg); }
+            80% { transform: translate(3px, -2px) rotate(-1deg); }
+            100% { transform: translate(0px, 0px) rotate(0deg); }
+        }
+        .animate-shakeBrutal {
+            animation: shakeBrutal 0.35s ease-in-out;
+        }
+        `}
+                        </style>
+                        {Array.isArray(dataKomentar) &&
+                            dataKomentar.length > 0 &&
+                            dataKomentar.map((item, i) => {
+                                const persen = extractPercent(
+                                    item.normal_message
+                                );
+                                return (
+                                    <div
+                                        key={i}
+                                        className={`
+                mt-2 p-4 rounded-xl border text-sm leading-relaxed
+                ${
+                    persen !== null && persen >= 90
+                        ? "bg-red-50 border-red-300 text-red-700 animate-shakeBrutal"
+                        : "bg-orange-50 border-orange-300 text-orange-700 animate-fadeSlide"
+                }
+            `}
+                                    >
+                                        <p className="font-semibold">
+                                            {item.normal_message}
+                                        </p>
+                                        <p className="font-semibold">
+                                            {item.sisa_budget}
+                                        </p>
+                                        <p className="mt-2">
+                                            {item.komentar_pedas}
+                                        </p>
+                                    </div>
+                                );
+                            })}
                     </div>
                 </div>
             </div>

@@ -6,7 +6,7 @@ import axios from "axios";
 import DataTable from "react-data-table-component";
 import { FaSpinner } from "react-icons/fa";
 import { ChartKategori, DougChartKategori } from "../components/ChartKategori";
-
+import { formatRupiah } from "./Dasboard";
 const Laporan = () => {
     const { user } = userAuth();
     const { kategori, setKategori, kategoriAll } = useContext(KategoriList);
@@ -196,7 +196,7 @@ const Laporan = () => {
                                 {loading ? (
                                     <FaSpinner className="animate-spin text-gray-400 inline-block" />
                                 ) : (
-                                    totalPemasukan // format rupiah
+                                    formatRupiah(totalPemasukan) // format rupiah
                                 )}
                             </p>
                         </div>
@@ -206,7 +206,7 @@ const Laporan = () => {
                                 {loading ? (
                                     <FaSpinner className="animate-spin text-gray-400 inline-block" />
                                 ) : (
-                                    totalPengeluaran // formatRupiah
+                                    formatRupiah(totalPengeluaran)
                                 )}
                             </p>
                         </div>

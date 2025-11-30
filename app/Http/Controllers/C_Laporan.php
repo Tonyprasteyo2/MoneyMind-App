@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\M_Budget;
+use App\Models\M_kategori;
 use App\Models\M_transaksi;
 use App\Models\User;
 use Carbon\Carbon;
@@ -149,6 +151,145 @@ class C_Laporan extends Controller
                 'kode' => 504,
                 'message' => 'ada gangguan koneksi',
             ], 504);
+        }
+    }
+    public function getDataBudget(Request $request)
+    {
+        $uid = $request->user()->firebase_uid;
+        $kategori = M_kategori::with([
+            'getBudget',
+            'transactions' => function ($q) use ($uid) {
+                $q->where('firebase_uid', $uid);
+            }
+        ])->whereHas('getBudget')->where('firebase_uid', $uid)->get();
+        return response()->json([
+            "status" => 200,
+            "data" => $kategori
+        ]);
+    }
+    public function pedasKomentar(Request $request)
+    {
+        $uid = $request->user()->firebase_uid;
+        $kategori = M_kategori::with([
+            "transactions" => fn($q) => $q->where("firebase_uid", $uid),
+            "getBudget" => fn($q) => $q->where("uid_firebase", $uid)
+        ])
+            ->where("firebase_uid", $uid)
+            ->get();
+        $peringatan = [];
+        foreach ($kategori as $key) {
+            $total = $key->transactions
+                ->where("type", "pengeluaran")
+                ->sum(fn($trx) => (float) $trx->amount);
+            $budget = $key->getBudget->budget_planing ?? 0;
+            $persen = $budget > 0 ? min(100, round(($total / $budget) * 100, 1)) : 0;
+            if ($persen < 80) continue;
+            $sisa = max(0, $budget - $total);
+            $peringatan[] = [
+                "kategori" => $key->name,
+                "persen" => $persen,
+                "sisa" => "Rp." . number_format($sisa, 0, ',', '.')
+            ];
+        }
+        return response()->json([
+            "status" => 200,
+            "data" => $peringatan,
+        ]);
+    }
+    public function tren7hari(Request $request)
+    {
+        try {
+            $uid = $request->user()->firebase_uid;
+            $transaksi = M_transaksi::with('getKategori')
+                ->where('firebase_uid', $uid)
+                ->where('type', 'pengeluaran')
+                ->get();
+            if ($transaksi->count() == 0) {
+                return response()->json([
+                    'status' => 200,
+                    'data' => [
+                        'top_pengeluaran' => [],
+                        'tren_7_hari' => [
+                            "Sunday" => 0,
+                            "Monday" => 0,
+                            "Tuesday" => 0,
+                            "Wednesday" => 0,
+                            "Thursday" => 0,
+                            "Friday" => 0,
+                            "Saturday" => 0,
+                        ],
+                        'highest_day' => null
+                    ]
+                ]);
+            }
+            $kategori = [];
+            foreach ($transaksi as $key) {
+                $nama = $key->getKategori->name ?? '-';
+                if (!isset($kategori[$nama])) {
+                    $kategori[$nama] = 0;
+                }
+                $kategori[$nama] += $key->amount;
+            }
+            arsort($kategori);
+            $topkategori = array_slice($kategori, 0, 5, true);
+            $last7 = M_transaksi::where('firebase_uid', $uid)
+                ->where('type', 'pengeluaran')
+                ->whereBetween('created_at', [
+                    now()->subDays(6)->startOfDay(),
+                    now()->endOfDay()
+                ])
+                ->get();
+            $tren = [];
+            for ($i = 6; $i >= 0; $i--) {
+                $day = now()->subDays($i)->format('l');
+                $tren[$day] = 0;
+            }
+            foreach ($last7 as $t) {
+                $hari = $t->created_at->format("l");
+                $tren[$hari] += $t->amount;
+            }
+            $highestday = null;
+            if (max($tren) > 0) {
+                $highestday = array_search(max($tren), $tren);
+            }
+            return response()->json([
+                "status" => 200,
+                "data" => [
+                    "top_pengeluaran" => $topkategori,
+                    "tren_7_hari" => $tren,
+                    "highest_day" => $highestday
+                ]
+            ]);
+        } catch (\Throwable $th) {
+
+            return response()->json([
+                'status' => 500,
+                'pesan' => $th->getMessage()
+            ]);
+        }
+    }
+    public function deleteBudget(Request $request, $id)
+    {
+        try {
+            $budget = M_Budget::where('id_budget', $id)
+                ->where('uid_firebase', $request->user()->firebase_uid)
+                ->first();
+
+            if (!$budget) {
+                return response()->json([
+                    "message" => "Data tidak ditemukan atau tidak punya akses.",
+                ], 404);
+            }
+
+            $budget->delete();
+            return response()->json([
+                "message" => "Data berhasil dihapus.",
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => "Terjadi kesalahan.",
+                "error" => $e->getMessage(),
+            ], 500);
         }
     }
 }

@@ -33,7 +33,14 @@ export const imageBase64 = (data) => {
         reader.readAsDataURL(data);
     });
 };
-
+export const icons = [
+    { name: "transportasi", icon: FaCar, color: "text-blue-500" },
+    { name: "makan", icon: FaUtensils, color: "text-yellow-500" },
+    { name: "bill", icon: FaMoneyBill, color: "text-green-500" },
+    { name: "tabungan", icon: FaGift, color: "text-pink-500" },
+    { name: "donasi", icon: FaDonate, color: "text-purple-500" },
+    { name: "lain-lain", icon: LuWalletCards, color: "text-pink-500" },
+];
 const FormTransaksi = () => {
     const [dispayValue, setDisplayValue] = useState("");
     const [jumlah, setJumlah] = useState(0);
@@ -61,14 +68,6 @@ const FormTransaksi = () => {
     } = useContext(KategoriList);
     const [resultOcr, setResultOcr] = useState(null);
     // const [tesCamera, setTesCamera] = useState(null);
-    const icons = [
-        { name: "transportasi", icon: FaCar, color: "text-blue-500" },
-        { name: "makan", icon: FaUtensils, color: "text-yellow-500" },
-        { name: "bill", icon: FaMoneyBill, color: "text-green-500" },
-        { name: "tabungan", icon: FaGift, color: "text-pink-500" },
-        { name: "donasi", icon: FaDonate, color: "text-purple-500" },
-        { name: "lain-lain", icon: LuWalletCards, color: "text-pink-500" },
-    ];
     const compressBase64 = (base64Str, maxWidth = 1200, quality = 0.6) => {
         return new Promise((resolve) => {
             const img = new Image();
@@ -179,7 +178,7 @@ const FormTransaksi = () => {
 
         try {
             const result = await axios.post(
-                BE_OCR,
+                `${BE_OCR}/ocr-image`,
                 { image: data },
                 {
                     headers: {
@@ -699,7 +698,6 @@ const FormTransaksi = () => {
                                 </p>
                             </div>
                         ) : animatedList.length === 0 ? (
-                            // 📉 Jika tidak ada transaksi
                             <div className="flex flex-col items-center justify-center text-gray-500 py-6">
                                 <FaRegChartBar className="size-24 text-yellow-500" />
                                 <p className="text-center text-sm sm:text-base">
@@ -708,7 +706,6 @@ const FormTransaksi = () => {
                                 </p>
                             </div>
                         ) : (
-                            // ✅ List transaksi dengan animasi masuk
                             <ul className="divide-y divide-gray-200">
                                 <AnimatePresence>
                                     {animatedList.map((result) => {

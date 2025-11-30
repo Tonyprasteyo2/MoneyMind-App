@@ -12,10 +12,11 @@ class M_Budget extends Model
     protected $fillable = [
         "uid_firebase",
         "id_kategori",
-        "budget_planing"
+        "budget_planing",
+        "target_bulan"
     ];
-
+    protected $primaryKey = 'id_budget';
     public function getKategoriTransaksi(){
-        return $this->belongsTo(M_kategori::class,'id_kategori','kategori_id');
+        return $this->belongsTo(M_transaksi::class,'category_id','kategori_id');
     }
 }

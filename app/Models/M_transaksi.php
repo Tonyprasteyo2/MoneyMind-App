@@ -16,10 +16,6 @@ class M_transaksi extends Model
         'type',
         'note',
     ];
-    // public function user()
-    // {
-    //     return $this->belongsTo(User::class);
-    // }
     public function listKategori()
     {
         return $this->belongsTo(M_kategori::class,'category_id','kategori_id');

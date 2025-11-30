@@ -79,7 +79,7 @@ export const ViewCamera = ({
             setPreviewImage(urlImage);
             const token = await user.getIdToken();
             const result = await axios.post(
-                BE_OCR,
+                `${BE_OCR}/ocr-image`,
                 {
                     image: urlImage,
                 },
