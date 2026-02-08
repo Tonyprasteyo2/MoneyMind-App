@@ -1,7 +1,6 @@
-\MoneyMind 💰✨
+MoneyMind 💰✨
 
 Smart AI-Powered Financial Management Platform
-
 MoneyMind adalah platform manajemen keuangan modern yang menggabungkan OCR, AI Classification, analisis pengeluaran, dan teknologi PWA untuk membantu pengguna mencatat transaksi dengan cepat dan akurat.
 
 👉 Live App: https://moneymind.cloud
