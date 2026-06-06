@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 MoneyMind 💰✨
 
 Smart AI-Powered Financial Management Platform
