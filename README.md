@@ -141,4 +141,3 @@ Made with ❤️ by the MoneyMind Team
 ⭐ **Jangan lupa kasih star kalau project ini bermanfaat!** ⭐
 
 </div>
->>>>>>> beta-versi
