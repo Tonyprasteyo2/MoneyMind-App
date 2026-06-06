@@ -25,4 +25,10 @@ class M_kategori extends Model
     {
          return $this->hasMany(M_transaksi::class, 'category_id', 'kategori_id');
     }
+<<<<<<< HEAD
+=======
+    public function getBudget(){
+        return $this->hasOne(M_Budget::class,'id_kategori','kategori_id')->whereRaw('DATE_ADD(created_at,INTERVAL target_bulan MONTH)>=NOW()');
+    }
+>>>>>>> beta-versi
 }

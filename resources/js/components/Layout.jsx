@@ -8,7 +8,11 @@ const Layout = ()=>{
         <Navbar/>
         <main className="app-csh">
              <Outlet />
+<<<<<<< HEAD
         </main>
+=======
+        </main>   
+>>>>>>> beta-versi
         </>
     )
 }

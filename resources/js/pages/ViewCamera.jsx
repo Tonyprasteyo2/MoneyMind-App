@@ -79,7 +79,11 @@ export const ViewCamera = ({
             setPreviewImage(urlImage);
             const token = await user.getIdToken();
             const result = await axios.post(
+<<<<<<< HEAD
                 BE_OCR,
+=======
+                `${BE_OCR}/ocr-image`,
+>>>>>>> beta-versi
                 {
                     image: urlImage,
                 },

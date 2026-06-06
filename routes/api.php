@@ -34,4 +34,13 @@ Route::middleware('firebase.auth')->group(function(){
     Route::post("/filter-laporan",[C_Laporan::class,"generateLaporan"]);
     Route::post('/analisis-laporan', [C_Laporan::class, 'analisisAI']);
     Route::post('/token-fcm', [C_Auth::class, 'saveToken']);
+    Route::post('/tambah-budget',[C_Transaksi::class,"AddBudget"]);
+    Route::get('/budget-planing',[C_Transaksi::class,"getBudgetPlannig"]);
+    Route::get("/budget-all",[C_Laporan::class,"getDataBudget"]);
+    Route::post("/update-budget-planing",[C_Transaksi::class,"updateDataBudget"]);
+    Route::get("/komentar-pedas",[C_Laporan::class,"pedasKomentar"]);
+    Route::get("/top-pengeluaran",[C_Transaksi::class,"topPengeluaran"]);
+    Route::get("/insight-analisis",[C_Transaksi::class,"insightAnalisis"]);
+    Route::get("/tren-7-hari",[C_Laporan::class,"tren7hari"]);
+    Route::get("/delete-budget/{id}",[C_Laporan::class,"deleteBudget"]);
 });

@@ -20,6 +20,11 @@ import { registerSW } from "virtual:pwa-register";
 import { messageListener } from "./service/firebase";
 import Swal from "sweetalert2";
 import { NotFound } from "./pages/NotFound";
+<<<<<<< HEAD
+=======
+import FormTransaksi from "./pages/FormTransaksi";
+import ViewBudget from "./pages/ViewBudget";
+>>>>>>> beta-versi
 const TitleHandler = () => {
     const location = useLocation();
     useEffect(() => {
@@ -27,6 +32,11 @@ const TitleHandler = () => {
             "/": "Login ",
             "/dasboard": "Dashboard",
             "/laporan": "Laporan ",
+<<<<<<< HEAD
+=======
+            "/transaksi": "Transaksi ",
+            "/budget": "Budget ",
+>>>>>>> beta-versi
             "*":"404 Not Found"
         };
         document.title = titles[location.pathname] || "404 Not Found | CashFlow";
@@ -67,7 +77,13 @@ const App = () => {
                                     element={<Dashboard />}
                                 />
                                 <Route path="/laporan" element={<Laporan />} />
+<<<<<<< HEAD
                             </Route>
+=======
+                                <Route path="/transaksi" element={<FormTransaksi />} />
+                                <Route path="/budget" element={<ViewBudget />} />
+                            </Route> 
+>>>>>>> beta-versi
 
                            <Route path="*" element={<NotFound />} />
                         </Routes>

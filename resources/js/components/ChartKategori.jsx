@@ -27,9 +27,16 @@ import {
 } from "react-icons/fa";
 import { LuWalletCards } from "react-icons/lu";
 import ChartDataLabels from "chartjs-plugin-datalabels";
+<<<<<<< HEAD
 import { formatRupiah } from "./Cards";
 import Swal from "sweetalert2";
 import DOMPurify from "dompurify";
+=======
+// import { formatRupiah } from "./Cards";
+import Swal from "sweetalert2";
+import DOMPurify from "dompurify";
+import { formatRupiah } from "../pages/Dasboard";
+>>>>>>> beta-versi
 
 Chart.register(
     LineElement,
@@ -280,6 +287,11 @@ export const DougChartKategori = ({ data }) => {
                 },
             },
             tooltip: {
+<<<<<<< HEAD
+=======
+                bodyColor: "#fff",
+                titleColor: "#fff",
+>>>>>>> beta-versi
                 callbacks: {
                     label: (context) => {
                         const label = context.label || "";
@@ -291,6 +303,17 @@ export const DougChartKategori = ({ data }) => {
                     },
                 },
             },
+<<<<<<< HEAD
+=======
+            datalabels: {
+                color: "#080808ff",
+                font: {
+                    weight: "bold",
+                    size: 10,
+                },
+                formatter: (value) => formatRupiah(value),
+            },
+>>>>>>> beta-versi
         },
         responsive: true,
         maintainAspectRatio: false,
@@ -439,7 +462,11 @@ export const DougChartKategori = ({ data }) => {
                 `}
                         </style>
                     </div>
+<<<<<<< HEAD
                     <div className="w-full max-w-sm space-y-3">
+=======
+                    <div className="w-full max-w-sm space-y-3 h-83 overflow-y-auto">
+>>>>>>> beta-versi
                         {kategoriList.map((nk, res) => {
                             const found =
                                 icons.find(
@@ -478,12 +505,23 @@ export const DougChartKategori = ({ data }) => {
                         })}
                     </div>
                 </div>
+<<<<<<< HEAD
                 {hasilAnalisis ? ( <div
                     className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 text-sm leading-relaxed overflow-auto"
                     dangerouslySetInnerHTML={{
                         __html: DOMPurify.sanitize(hasilAnalisis),
                     }}
                 />):null}
+=======
+                {hasilAnalisis ? (
+                    <div
+                        className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 text-sm leading-relaxed overflow-auto"
+                        dangerouslySetInnerHTML={{
+                            __html: DOMPurify.sanitize(hasilAnalisis),
+                        }}
+                    />
+                ) : null}
+>>>>>>> beta-versi
             </div>
         </div>
     );

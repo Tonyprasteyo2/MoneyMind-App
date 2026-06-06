@@ -5,9 +5,14 @@ import { API_URL } from "../service/firebase";
 import axios from "axios";
 import DataTable from "react-data-table-component";
 import { FaSpinner } from "react-icons/fa";
+<<<<<<< HEAD
 import { formatRupiah } from "../components/Cards";
 import { ChartKategori, DougChartKategori } from "../components/ChartKategori";
 
+=======
+import { ChartKategori, DougChartKategori } from "../components/ChartKategori";
+import { formatRupiah } from "./Dasboard";
+>>>>>>> beta-versi
 const Laporan = () => {
     const { user } = userAuth();
     const { kategori, setKategori, kategoriAll } = useContext(KategoriList);
@@ -197,7 +202,11 @@ const Laporan = () => {
                                 {loading ? (
                                     <FaSpinner className="animate-spin text-gray-400 inline-block" />
                                 ) : (
+<<<<<<< HEAD
                                     formatRupiah(totalPemasukan)
+=======
+                                    formatRupiah(totalPemasukan) // format rupiah
+>>>>>>> beta-versi
                                 )}
                             </p>
                         </div>

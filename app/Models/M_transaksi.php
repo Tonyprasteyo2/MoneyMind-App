@@ -16,12 +16,21 @@ class M_transaksi extends Model
         'type',
         'note',
     ];
+<<<<<<< HEAD
     // public function user()
     // {
     //     return $this->belongsTo(User::class);
     // }
+=======
+>>>>>>> beta-versi
     public function listKategori()
     {
         return $this->belongsTo(M_kategori::class,'category_id','kategori_id');
     }
+<<<<<<< HEAD
+=======
+    public function getKategori(){
+        return $this->belongsTo(M_kategori::class,'category_id','kategori_id');
+    }
+>>>>>>> beta-versi
 }
